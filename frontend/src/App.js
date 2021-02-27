@@ -13,14 +13,13 @@ function App() {
   const [address, setAddress] = useState('');
   const [privateKey, setPrivateKey] = useState('');
   const [balance, setBalance] = useState('');
+  const [bankBalance, setBankBalance] = useState('');
   const [toAddress, setToAddress] = useState('');
   const [amount, setAmount] = useState(0);
   const [message, setMessage] = useState('');
-
-  useEffect(()=> {
-
-  })
-
+  const [depositMessage, setDepositMessage] = useState('');
+  const [withdrawMessage, setWithdrawMessage] = useState('');
+  
   const login = () => {
     axios.post('http://localhost:8080/users/loginWallet', {privateKey: privateKey}).then(res => {
       console.log(res);
@@ -44,47 +43,66 @@ function App() {
     })
   }
 
+  const checkBankBalance = () => {
+    axios.get('http://localhost:8080/users/getBankBalance?address='+address).then(res => {
+      console.log(res);
+      setBankBalance(res.data.balance)
+    })
+  }
+
   const transfer = () => {
     axios.post('http://localhost:8080/users/sendEther', {privateKey: privateKey, amount: amount, toAddress: toAddress}).then(res => {
       setMessage(res.data.receipt)
     })
   }
+  const deposit = () => {
+    axios.post('http://localhost:8080/users/depositEther', {privateKey: privateKey, amount: amount}).then(res => {
+      setDepositMessage(res.data.receipt)
+    })
+  }
+
+  const withdraw = () => {
+    axios.post('http://localhost:8080/users/withdrawEther', {privateKey: privateKey, amount: amount}).then(res => {
+      setWithdrawMessage(res.data.receipt)
+    })
+  }
   return (
     <Container>
     <br/>
-        <Grid container spacing={3} direction="column">
-          <Grid item xs={3}>
-          <Paper>
-            <Button color="primary" variant="contained" onClick={createNewWallet}>Create new account </Button><br/>
-            {"Address: "+ address}<br/>
-            {"Private Key: "+privateKey}<br/>
-            {address && <Button color="primary" variant="contained" onClick={checkBalance}>Check Balance</Button>}<br/>
-            {balance && <>{'Your wallet balance is:'}{balance}{'Ethers'}</>}<br/>
-          </Paper>
-          </Grid>
-          <Grid item xs={3}>
-            <Paper>{'Transfer'}<br/><br/>
-              <TextField
-                required
-                id="outlined-required"
-                label="To Address"
-                defaultValue="0xABC..."
-                onChange={(e) => setToAddress(e.target.value)}
-                variant="outlined"
-              /><br/><br/>
-              <TextField
-                required
-                id="outlined-required"
-                label="Amount"
-                defaultValue="0"
-                onChange={(e) => setAmount(e.target.value)}
-                variant="outlined"
-              /><br/>
-              <Button color="primary" variant="contained" onClick={transfer}>Transfer </Button><br/>
-              {message && <>Transfer done. Receipt is:{message}</>}
+        <Grid container spacing={3} direction="row">
+        <Grid item xs={6}>
+          <Grid item xs={12}>
+            <Paper>
+              <Button color="primary" variant="contained" onClick={createNewWallet}>Create new account </Button><br/>
+              {"Address: "+ address}<br/>
+              {"Private Key: "+privateKey}<br/>
+              {address && <Button color="primary" variant="contained" onClick={checkBalance}>Check Balance</Button>}<br/>
+              {balance && <>{'Your wallet balance is:'}{balance}{'Ethers'}</>}<br/>
             </Paper>
-          </Grid>
-          <Grid item xs={3}>
+            </Grid>
+          <Grid item xs={12}>
+              <Paper>{'Transfer'}<br/><br/>
+                <TextField
+                  required
+                  id="outlined-required"
+                  label="To Address"
+                  defaultValue="0xABC..."
+                  onChange={(e) => setToAddress(e.target.value)}
+                  variant="outlined"
+                /><br/><br/>
+                <TextField
+                  required
+                  id="outlined-required"
+                  label="Amount"
+                  defaultValue="0"
+                  onChange={(e) => setAmount(e.target.value)}
+                  variant="outlined"
+                /><br/>
+                <Button color="primary" variant="contained" onClick={transfer}>Transfer </Button><br/>
+                {message && <>Transfer done. Receipt is:{message}</>}
+              </Paper>
+            </Grid>
+          <Grid item xs={12}>
             <Paper>
             {'Login using Private Key:'}<br/><br/>
             <TextField
@@ -98,10 +116,50 @@ function App() {
             <Button color="primary" variant="contained" onClick={login}>Login </Button><br/>
              </Paper>
           </Grid>
-          <Grid item xs={3}>
-            <Paper></Paper>
-          </Grid>
         </Grid>
+        <Grid item xs={6}>
+          <Grid item xs={12}>
+
+              <Paper>
+                <div style={{textAlign: "center"}}>Demo Bank</div><br/>
+                {"Address: "+ address}<br/>
+              {"Private Key: "+privateKey}<br/>
+              {address && <Button color="primary" variant="contained" onClick={checkBankBalance}>Check Bank Balance</Button>}<br/>
+
+              {bankBalance && <>{'Your Bank balance is:'}{bankBalance?bankBalance: '0'}{'Ethers'}</>}<br/>
+              </Paper>
+          </Grid>
+          <Grid item xs={12}>
+              <Paper>{'Deposit in Bank'}<br/><br/>
+                <TextField
+                  required
+                  id="outlined-required"
+                  label="Amount"
+                  defaultValue="0"
+                  onChange={(e) => setAmount(e.target.value)}
+                  variant="outlined"
+                /><br/>
+                <Button color="primary" variant="contained" onClick={deposit}>Deposit </Button><br/>
+                {depositMessage && <>Deposit done. Receipt is:{depositMessage}</>}
+              </Paper>
+              <Paper>{'Withdraw from Bank'}<br/><br/>
+                <TextField
+                  required
+                  id="outlined-required"
+                  label="Amount"
+                  defaultValue="0"
+                  onChange={(e) => setAmount(e.target.value)}
+                  variant="outlined"
+                /><br/>
+                <Button color="primary" variant="contained" onClick={withdraw}>Withdraw </Button><br/>
+                {withdrawMessage && <>Withdrawal done. Receipt is:{withdrawMessage}</>}
+              </Paper>
+            </Grid>
+        </Grid>
+          
+          
+        </Grid>
+        
     </Container>
   );
 }
